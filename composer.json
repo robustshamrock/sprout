@@ -16,12 +16,4 @@
         }
     ],
     "minimum-stability": "dev",
-    "require": {
-        "nikic/fast-route": "^2.0@dev",
-        "php-di/php-di": "dev-master",
-        "thingengineer/mysqli-database-class": "dev-master",
-        "monolog/monolog": "2.x-dev",
-        "intervention/image": "^3.0@alpha",
-        "jasongrimes/paginator": "~1.0"
-    }
 }
