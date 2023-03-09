@@ -6,7 +6,6 @@
     "autoload": {
         "psr-4": {
             "Shamrock\\Instance\\": "src/",
-			"App\\":"app/"
         }
     },
     "authors": [
@@ -16,4 +15,5 @@
         }
     ],
     "minimum-stability": "dev",
+	"require": {}
 }
