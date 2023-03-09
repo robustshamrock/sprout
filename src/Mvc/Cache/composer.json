@@ -1,0 +1,19 @@
+{
+    "name": "zeyuanfly/cache",
+    "description": "cache",
+    "type": "l",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Zeyuanfly\\Cache\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "zeyuan",
+            "email": "zeyuanlucky@163.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {}
+}
