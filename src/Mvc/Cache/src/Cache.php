@@ -24,7 +24,7 @@ class Cache{
      * @return mixed
      * 设置cache值
      */
-	public function set($key,$value,$expire=300){
+	public function set($key,$value,$expire=true){
         return $this->cacheType->set($key,$value,$expire);
 	}
 
