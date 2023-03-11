@@ -25,6 +25,9 @@ class RootSegment
     // app 设置
     protected $appConfig = [];
 
+    // 当前模块别名
+    protected $_currentModuleAlias = '';
+
     // 初始化
     public function __construct($config=''){
         if (is_array($config)){
@@ -72,12 +75,13 @@ class RootSegment
         $redisCacheInstance = $this->__getContainer('redis_cache');
 
         $envFile = APP_PATH . 'env.txt';
-        $fileMd5 = md5_file($envFile);
-
-        if($redisCacheInstance->compareFileMd5($fileMd5,'RootSegment/__prepareEnv')){
-            $envArr = $redisCacheInstance->get('RootSegment/__prepareEnv');
+        if(!is_file($envFile)) {
+            $fileMd5 = 0;
         }else{
-            if(is_file($envFile)) {
+            $fileMd5 = md5_file($envFile);
+            if($redisCacheInstance->compareFileMd5($fileMd5,'RootSegment/__prepareEnv')){
+                $envArr = $redisCacheInstance->get('RootSegment/__prepareEnv');
+            }else{
                 $envArr = \Shamrock\Instance\ReadLineByLineToArray($envFile);
                 $envArr['file_md5'] = $fileMd5;
                 $redisCacheInstance->set('RootSegment/__prepareEnv',$envArr);
@@ -154,6 +158,9 @@ class RootSegment
             }
         }
 
+        // 赋值
+        $this->_currentModuleAlias = $appName;
+
         // 链接识别
         $targetAppName = 'Unknown App Name';
         // 在app注册表中查找应用
@@ -184,8 +191,26 @@ class RootSegment
                 $this->currentAppName = $targetAppName;
             }
         }else{
-            // app 注册表缺失
-            throw new \Exception("app 注册表缺失,清配置app注册表:/Config/App.php");
+            // 查找所有config
+            $path = APP_PATH.'App';
+            $configs = \Shamrock\Instance\HelperBathLoadConfigs($path,'Config');
+            foreach ($configs as $confKey=>$confVal){
+                $meargeConfigs = \Shamrock\Instance\MeargeConfigs($confVal);
+                if(is_array($meargeConfigs['module'])){
+                    if(in_array($appName, $meargeConfigs['module']['module_alias'])){
+                        $targetAppName = strtolower($confKey);
+                        $this->currentAppName = $targetAppName;
+                        $this->__appRegisterConfigArr = $meargeConfigs;
+                        unset($meargeConfigs);
+
+                    }
+                }
+            }
+
+            unset($configs);
+            if($targetAppName=='Unknown App Name'){
+                throw new \Exception("app 注册表缺失,清配置app注册表:/Config/App.php");
+            }
         }
     }
 
@@ -258,6 +283,7 @@ class RootSegment
                 unset($configs['app']['route']);
                 $this->appConfig['conf'] = $configs;
 
+                unset($this->__appRegisterConfigArr);
                 unset($configs);
             }else{
                 throw new \Exception("未找到应用配置，清配置app注册表:/Config/App.php>>>配置");
@@ -348,6 +374,11 @@ class RootSegment
                     $parseUrlArr['query'] = '';
                 }
 
+                $theme = 'default';
+                if (isset($this->appConfig['conf']['app']['theme_name'])){
+                    $theme = $this->appConfig['conf']['app']['theme_name'];
+                }
+
                 $appRegisterMap = [
                     'action'=>$functionName,
                     'class'=>$className,
@@ -361,8 +392,10 @@ class RootSegment
                     'base_scheme'=>$parseUrlArr['scheme'],
                     'base_path'=>$parseUrlArr['path'],
                     'base_query'=>$parseUrlArr['query'],
-
-                    'app_path'=>APP_PATH,
+                    'current_module_alias'=>$this->_currentModuleAlias,
+                    'current_page_url'=>\Shamrock\Instance\GetPageurl(),
+                    'theme'=>$theme,
+                    'app_path'=>str_replace('/',DIRECTORY_SEPARATOR,APP_PATH),
                     'args'=>$vars,
                 ];
 

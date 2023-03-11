@@ -34,6 +34,68 @@ function ReadLineByLineToArray($path){
     return $user;
 }
 
+function createGuid($namespace = '') {
+    static $guid = '';
+
+    $uid = uniqid("", true);
+    $data = $namespace;
+    $data .= $_SERVER['REQUEST_TIME'];
+    $data .= $_SERVER['HTTP_USER_AGENT'];
+    $data .= $_SERVER['PHP_SELF'];
+    $data .= $_SERVER['REMOTE_PORT'];
+    $data .= $_SERVER['REMOTE_ADDR'];
+    $data .= $_SERVER['REMOTE_PORT'];
+    $data .= generateGuid($namespace);
+    $hash = strtoupper(hash('ripemd128', $uid . $guid . md5($data)));
+    $guid = '{' .
+        substr($hash, 0, 8) .
+        '-' .
+        substr($hash, 8, 4) .
+        '-' .
+        substr($hash, 12, 4) .
+        '-' .
+        substr($hash, 16, 4) .
+        '-' .
+        substr($hash, 20, 12) .
+        '}';
+    return $guid;
+}
+
+/**
+ * @param $prefix
+ * @return string
+ * 生成唯一id
+ */
+function generateGuid($prefix=''){
+    //假设一个机器id
+    $machineId = mt_rand(100000,999999);
+
+    //41bit timestamp(毫秒)
+    $time = floor(microtime(true) * 1000);
+
+    //0bit 未使用
+    $suffix = 0;
+
+    //datacenterId  添加数据的时间
+    $base = decbin(pow(2,40) - 1 + $time);
+
+    //workerId  机器ID
+    $machineid = decbin(pow(2,9) - 1 + $machineId);
+
+    //毫秒类的计数
+    $random = mt_rand(1, pow(2,11)-1);
+
+    $random = decbin(pow(2,11)-1 + $random);
+    //拼装所有数据
+    $base64 = $suffix.$base.$machineid.$random;
+    //将二进制转换int
+    $base64 = bindec($base64);
+
+    $id = sprintf('%.0f', $base64);
+
+    return $prefix.$id;
+}
+
 /**
  * @param $path
  * @param $args
@@ -110,6 +172,129 @@ function GetPageurl() {
         $pageURL .= $_SERVER["SERVER_NAME"] . $_SERVER["REQUEST_URI"];
     }
     return $pageURL;
+}
+
+
+function MeargeConfigs($config){
+    foreach($config as $key=>$val){
+        $config[$key]['key_length'] = mb_substr_count($key,'/');
+    }
+
+    $targetConfigs = [];
+    $cofnigs = sortByKeyDesc($config,'key_length');
+
+    foreach ($cofnigs as $val){
+        $targetConfigs =array_merge($targetConfigs,$val);
+    }
+    return $targetConfigs;
+}
+
+function sortByKeyDesc($arr, $key) {
+    array_multisort(array_column($arr, $key), SORT_ASC, $arr);
+    return $arr;
+}
+
+/**
+ * @param $path
+ * @param $search
+ * @return array
+ * 载入某些配置
+ */
+function HelperBathLoadConfigs($path,$search){
+    if(!is_dir($path)){
+        return [];
+    }
+    $arr = array();
+    $data = scandir($path);
+    $configs = [];
+    $settingConfigs = [];
+
+    foreach ($data as $value){
+        if($value != '.' && $value != '..'){
+            $arr[] = $value;
+            if(is_dir($path . DIRECTORY_SEPARATOR . $value)){
+                $folder_list = [];
+                helper_find_files($path . DIRECTORY_SEPARATOR . $value , $folder_list);
+
+                foreach($folder_list as $key=>$val){
+                    foreach($val as $vval){
+                        $settingConfigs = '';
+
+                        $targetName = str_replace('/',DIRECTORY_SEPARATOR,$key);
+                        $processKeyName = explode('App'.DIRECTORY_SEPARATOR,$targetName);
+
+                        $targeetKyeNameArr = [];
+                        $targeetKyeNameStr = '';
+
+                        if (isset($processKeyName[1])){
+                            if (strpos($processKeyName[1],DIRECTORY_SEPARATOR)!==false){
+                                $targeetKyeNameArr = explode(DIRECTORY_SEPARATOR,$processKeyName[1]);
+                                $targeetKyeNameStr = $targeetKyeNameArr[0];
+                            }else{
+                                $targeetKyeNameStr = $processKeyName[1];
+                            }
+                        }
+
+                        if(strpos($vval,'.php') && strpos($key,$search)){
+                            $keyName = substr($vval,0,strpos($vval,'.'));
+                            $settingConfigs = include($key . DIRECTORY_SEPARATOR . $vval);
+                            $processName = $key . DIRECTORY_SEPARATOR . $vval;
+                            $targetNameArr = explode('Config',$processName);
+                            if(isset($targetNameArr[1])){
+                                $targetNameArr = str_replace(DIRECTORY_SEPARATOR,'/',$targetNameArr[1]);
+                                $processTargetNameArr = explode('.php',$targetNameArr);
+                                $targetNem = trim($processTargetNameArr[0],'/');
+                            }else{
+                                $targetNem = $vval;
+                            }
+
+                            if(is_array($settingConfigs)){
+                                $configs[$targeetKyeNameStr][$targetNem] = $settingConfigs;
+                                //$configs[$targetNem]['file_md5'] = md5_file($key . DIRECTORY_SEPARATOR . $vval);
+                            }
+                        }
+                    }
+                }
+            }else{
+                if(is_file($path . DIRECTORY_SEPARATOR . $value)){
+                    if(strpos($path . DIRECTORY_SEPARATOR . $value,'.php')&& strpos($path . DIRECTORY_SEPARATOR . $value,$search)){
+
+                        $targetName = str_replace('/',DIRECTORY_SEPARATOR,$path . DIRECTORY_SEPARATOR . $value);
+                        $processKeyName = explode('App'.DIRECTORY_SEPARATOR,$targetName);
+
+                        $targeetKyeNameArr = [];
+                        $targeetKyeNameStr = '';
+
+                        if (isset($processKeyName[1])){
+                            if (strpos($processKeyName[1],DIRECTORY_SEPARATOR)!==false){
+                                $targeetKyeNameArr = explode(DIRECTORY_SEPARATOR,$processKeyName[1]);
+                                $targeetKyeNameStr = $targeetKyeNameArr[0];
+                            }else{
+                                $targeetKyeNameStr = $processKeyName[1];
+                            }
+                        }
+
+                        $processName = $path . DIRECTORY_SEPARATOR . $value;
+                        $targetNameArr = explode('Config',$processName);
+                        if(isset($targetNameArr[1])){
+                            $targetNameArr = str_replace(DIRECTORY_SEPARATOR,'/',$targetNameArr[1]);
+                            $processTargetNameArr = explode('.php',$targetNameArr);
+                            $targetNem = trim($processTargetNameArr[0],'/');
+                        }else{
+                            $targetNem = $value;
+                        }
+
+                        $settingConfigs = include($path . DIRECTORY_SEPARATOR . $value);
+                        $configs[$targeetKyeNameStr][$targetNem] = $settingConfigs;
+                        //$configs[$targetNem]['file_md5'] = md5_file($path . DIRECTORY_SEPARATOR . $value);
+                    }
+                }
+
+            }
+        }
+    }
+
+    return $configs;
 }
 
 /**
@@ -210,3 +395,4 @@ function helper_find_files($dir, &$dir_array){
         }
     }
 }
+

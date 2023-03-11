@@ -40,11 +40,15 @@ class PhpRedisSingleKeyVal{
      * @throws \RedisException
      * 设置缓存
      */
-    public function set($key,$val,$expire=300){
+    public function set($key,$val,$expire=true){
         if(is_array($val)){
             $val = json_encode($val);
         }
-        $this->redis->set($key,$val,$expire);
+        if ($expire!==true){
+            $this->redis->set($key,$val,$expire);
+        }else{
+            $this->redis->set($key,$val);
+        }
     }
 
     /**

@@ -1,6 +1,7 @@
 <?php
 namespace Shamrock\Instance\Mvc\Controller;
 use Shamrock\Instance\Mvc\View\BaseView;
+use Shamrock\Instance\Session\Session;
 
 class BaseController{
     /**
@@ -88,6 +89,32 @@ class BaseController{
     protected $viewInstance;
 
     /**
+     * 当前模块别名
+     */
+    protected $_current_module_alias;
+
+    // 主题
+    protected $_theme;
+
+    /**
+     * @var
+     * 表单令牌
+     */
+    protected $_token;
+
+    /**
+     * @var
+     * session实例
+     */
+    protected $_sessionInstance;
+
+    /**
+     * @var mixed
+     * 当前链接
+     */
+    protected $_current_page_url;
+
+    /**
      * @param $args
      * 准备工作
      */
@@ -105,12 +132,68 @@ class BaseController{
         $this->app_path = $args['app_path'];
         $this->args = $args['args'];
 
+        $this->_current_page_url = $args['current_page_url'];
+
         $this->instancePath = APP_PATH .'App'.DIRECTORY_SEPARATOR.ucfirst($args['currnt_app_name']).
             DIRECTORY_SEPARATOR . 'src';
+        $this->_current_module_alias = $args['current_module_alias'];
 
+        $this->_theme = $args['theme'];
         $this->viewInstance = new BaseView(['class'=>$this->class,
             'instancePath'=>$this->instancePath,
+            'theme'=>$args['theme'],
+            'baes_url'=>$this->_current_page_url,
+            'theme_url'=> $this->base_scheme . '://'.$this->base_domain . '/assets/' .$this->_current_module_alias.'/'.$this->_theme,
             ]);
+
+        $this->loadSession();
+        $this->generateFormToken();
+        $this->assign('framework_versition',$this->framework_version);
+    }
+
+    /**
+     * @return void
+     * 载入session实例
+     */
+    public function loadSession(){
+        session_start();
+        $redisInstance = $this->getContainer('redis_cache');
+        $session = new Session(['key'=>'123123fasdfsdsdf123123sdfasfasdfsdfasd',
+            'instance'=> new \Shamrock\Instance\Session\Type\RedisSingle($redisInstance),
+        ]);
+        $this->_sessionInstance = $session;
+    }
+
+    /**
+     * @return void
+     * 生成表单token
+     */
+    public function generateFormToken(){
+        $token = \Shamrock\Instance\generateGuid('M'.date('Ymd'));
+        $this->_token = $token;
+        $this->assign('token',$token);
+        $this->setSession('token',$token);
+    }
+
+    /**
+     * @param $key
+     * @param $val
+     * @return void
+     * 设置session
+     */
+    public function setSession($key,$val){
+        $sessionID = $this->_sessionInstance->getSessionIdForFileType();
+        $this->_sessionInstance->set('session_'.$sessionID.$key,$val,140000);
+    }
+
+    /**
+     * @param $key
+     * @return mixed
+     * 获取session
+     */
+    public function getSession($key){
+        $sessionID = $this->_sessionInstance->getSessionIdForFileType();
+        return $this->_sessionInstance->get('session_'.$sessionID.$key);
     }
 
     /**
@@ -164,6 +247,14 @@ class BaseController{
      */
     public function assign($key,$value){
         $this->viewInstance->assign($key,$value);
+    }
+
+    /*
+     * 获取媒体资源
+     */
+    public function assets($assets){
+        $assets = ltrim('/',$assets);
+        echo $this->base_scheme . '://'.$this->base_domain . '/assets/' .$this->_current_module_alias.'/'.$this->_theme.''.$assets;
     }
 
     /**

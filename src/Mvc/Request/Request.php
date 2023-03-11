@@ -45,6 +45,15 @@ class Request{
     }
 
     /**
+     * @return mixed
+     * 是否手机访问
+     */
+    public static function isMobile(){
+        $mobileObject = new \Shamrock\Instance\Mvc\Request\IsMobile();
+        return $mobileObject->CheckMobile();
+    }
+
+    /**
      * @param $name
      * @return mixed
      * post提交数据
