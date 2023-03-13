@@ -174,12 +174,30 @@ class BaseController{
         return $this->base_scheme . '://'.$this->base_domain . '/' .$this->_current_module_alias.'/'.$url;
     }
 
-    // 跳转
+    /**
+     * @param $url
+     * @return void
+     * 跳转
+     */
     public function redirect($url){
         $url = $this->Url($url);
         header('Location: '.$url);
     }
 
+    /**
+     * @param $url
+     * @param $data
+     * @return void
+     * 跳转中转页
+     */
+    public function redirectPage($url,$data){
+
+    }
+
+    /**
+     * @return mixed|null
+     * 获取用户id
+     */
     public function getUID(){
         $userArr = $this->getSession('user');
         if ($userArr['UID']){

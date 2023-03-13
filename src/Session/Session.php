@@ -140,7 +140,8 @@ class Session{
             true
         );
         if (! hash_equals($hmac, $hmacNew)) {
-            throw new \Exception("Authentication failed");
+            return null;
+            //throw new \Exception("Authentication failed");
         }
         // Decrypt
         return openssl_decrypt(
