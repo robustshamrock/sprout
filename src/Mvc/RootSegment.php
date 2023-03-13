@@ -3,6 +3,7 @@
 namespace Shamrock\Instance\Mvc;
 
 use function Shamrock\Instance\HelperLoad;
+use const http\Client\Curl\Features\UNIX_SOCKETS;
 
 class RootSegment
 {
@@ -166,6 +167,7 @@ class RootSegment
         // 在app注册表中查找应用
         $appRegisterConfigPath = APP_PATH.DIRECTORY_SEPARATOR.'Config'.DIRECTORY_SEPARATOR.'App.php';
         $appRegisterConfigArr = \Shamrock\Instance\HelperLoadConfig($appRegisterConfigPath);
+
         if(is_array($appRegisterConfigArr)){
             foreach ($appRegisterConfigArr['module'] as $keyAppName=>$val){
                 if(is_array($val['module_alias'])){
@@ -246,11 +248,13 @@ class RootSegment
                 $configs = $redisCacheInstance->get('RootSegment/__registerConfig/batchGetFileMd5Arr');
             }
 
-            if(isset($configs['app']['route'])&&!empty($configs['app']['route'])){
-                $this->appConfig['route'] = $configs['app']['route'];
+            $combineConfigs = \Shamrock\Instance\MeargeConfigs($configs);
+            if(isset($combineConfigs['route'])&&!empty($combineConfigs['route'])){
+                $this->appConfig['route'] = $combineConfigs['route'];
                 unset($configs['app']['route']);
                 $this->appConfig['conf'] = $configs;
 
+                unset($combineConfigs);
                 unset($configs);
             }
 
@@ -278,11 +282,13 @@ class RootSegment
                 $configs = $redisCacheInstance->get('RootSegment/__registerConfig/batchGetFileMd5Arr');
             }
 
-            if(isset($configs['app']['route'])&&!empty($configs['app']['route'])){
-                $this->appConfig['route'] = $configs['app']['route'];
+            $combineConfigs = \Shamrock\Instance\MeargeConfigs($configs);
+            if(isset($combineConfigs['route'])&&!empty($combineConfigs['route'])){
+                $this->appConfig['route'] = $combineConfigs['route'];
                 unset($configs['app']['route']);
                 $this->appConfig['conf'] = $configs;
 
+                unset($combineConfigs);
                 unset($this->__appRegisterConfigArr);
                 unset($configs);
             }else{
