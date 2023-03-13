@@ -396,3 +396,52 @@ function helper_find_files($dir, &$dir_array){
     }
 }
 
+/* PHP sha256() */
+function sha256($data, $rawOutput = false)
+{
+    if (!is_scalar($data)) {
+        return false;
+    }
+    $data = (string)$data;
+    $rawOutput = !!$rawOutput;
+    return hash('sha256', $data, $rawOutput);
+}
+
+/* PHP sha256_file() */
+function sha256_file($file, $rawOutput = false)
+{
+    if (!is_scalar($file)) {
+        return false;
+    }
+    $file = (string)$file;
+    if (!is_file($file) || !is_readable($file)) {
+        return false;
+    }
+    $rawOutput = !!$rawOutput;
+    return hash_file('sha256', $file, $rawOutput);
+}
+
+/* PHP sha512() */
+function sha512($data, $rawOutput = false)
+{
+    if (!is_scalar($data)) {
+        return false;
+    }
+    $data = (string)$data;
+    $rawOutput = !!$rawOutput;
+    return hash('sha512', $data, $rawOutput);
+}
+
+/* PHP sha512_file()*/
+function sha512_file($file, $rawOutput = false)
+{
+    if (!is_scalar($file)) {
+        return false;
+    }
+    $file = (string)$file;
+    if (!is_file($file) || !is_readable($file)) {
+        return false;
+    }
+    $rawOutput = !!$rawOutput;
+    return hash_file('sha512', $file, $rawOutput);
+}

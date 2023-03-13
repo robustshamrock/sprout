@@ -2,6 +2,7 @@
 namespace Shamrock\Instance\Mvc\Controller;
 use Shamrock\Instance\Mvc\View\BaseView;
 use Shamrock\Instance\Session\Session;
+use Shamrock\Instance\Mvc\Request\Request;
 
 class BaseController{
     /**
@@ -147,7 +148,6 @@ class BaseController{
             ]);
 
         $this->loadSession();
-        $this->generateFormToken();
         $this->assign('framework_versition',$this->framework_version);
     }
 
@@ -165,14 +165,41 @@ class BaseController{
     }
 
     /**
+     * @param $url
+     * @return string
+     * 链接
+     */
+    public function Url($url){
+        $url = trim($url,'/');
+        return $this->base_scheme . '://'.$this->base_domain . '/' .$this->_current_module_alias.'/'.$url;
+    }
+
+    // 跳转
+    public function redirect($url){
+        $url = $this->Url($url);
+        header('Location: '.$url);
+    }
+
+    public function getUID(){
+        $userArr = $this->getSession('user');
+        if ($userArr['UID']){
+            return $userArr['UID'];
+        }else{
+            return null;
+        }
+    }
+
+    /**
      * @return void
      * 生成表单token
      */
     public function generateFormToken(){
-        $token = \Shamrock\Instance\generateGuid('M'.date('Ymd'));
-        $this->_token = $token;
-        $this->assign('token',$token);
-        $this->setSession('token',$token);
+        if (Request::isGet()){
+            $token = \Shamrock\Instance\generateGuid('M'.date('Ymd'));
+            $this->_token = $token;
+            $this->assign('token',$token);
+            $this->setSession('token',$token,1800);
+        }
     }
 
     /**
@@ -181,9 +208,9 @@ class BaseController{
      * @return void
      * 设置session
      */
-    public function setSession($key,$val){
+    public function setSession($key,$val,$expire=14000){
         $sessionID = $this->_sessionInstance->getSessionIdForFileType();
-        $this->_sessionInstance->set('session_'.$sessionID.$key,$val,140000);
+        $this->_sessionInstance->set('session_'.$sessionID.$key,$val,$expire);
     }
 
     /**
@@ -211,25 +238,36 @@ class BaseController{
      * @return void
      * 验证
      */
-    public function validate($name,$args){
-        if (!strpos($name,DIRECTORY_SEPARATOR)){
-            throw new \Exception("清添加路径/");
-        }
-
+    public function validate($name,$args=[]){
+        $name = trim($name,DIRECTORY_SEPARATOR);
         $validatePath = $this->instancePath.DIRECTORY_SEPARATOR.'Validate';
         if(!is_dir($validatePath)){
             mkdir($validatePath,0777,true);
         }
 
-        if(!is_file($validatePath.DIRECTORY_SEPARATOR.$name.'.php')){
-            throw new \Exception("$validatePath ".DIRECTORY_SEPARATOR." $name.php 不存在");
+        if(strpos($name,'.php')){
+            $path = $validatePath.DIRECTORY_SEPARATOR.$name;
+        }else{
+            $path = $validatePath.DIRECTORY_SEPARATOR.$name.'.php';
         }
 
+        if(!is_file($path)){
+            throw new \Exception("$path 不存在");
+        }
+
+        $post['post'] = Request::post();
+        if(is_array($post)){
+            extract($post);
+        }
+
+        $args['token'] = $this->_token;
         if(is_array($args)){
-            $args = extract($args);
+            extract($args);
         }
 
-        include $validatePath.DIRECTORY_SEPARATOR.$name.'.php';
+        //unset($post);
+        //unset($args);
+        return include $path;
     }
 
     /**
@@ -238,6 +276,7 @@ class BaseController{
      * 显示模板
      */
     public function render($name,$args=[]){
+        $this->generateFormToken();
         $this->viewInstance->render($name,$args);
     }
 
@@ -269,7 +308,7 @@ class BaseController{
             $arr = $rArr;
             unset($rArr);
         }
-        echo json_encode($arr);
+        echo json_encode($arr);exit;
     }
 
     /**
