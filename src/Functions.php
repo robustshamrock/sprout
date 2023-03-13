@@ -445,3 +445,64 @@ function sha512_file($file, $rawOutput = false)
     $rawOutput = !!$rawOutput;
     return hash_file('sha512', $file, $rawOutput);
 }
+
+
+/**
+ * @param $data
+ * @param $key
+ * @return string
+ * @throws \Exception
+ * session加密
+ */
+function encrypt($data, $key)
+{
+    $iv = random_bytes(16); // AES block size in CBC mode
+    // Encryption
+    $ciphertext = openssl_encrypt(
+        $data,
+        'AES-256-CBC',
+        mb_substr($key, 0, 32, '8bit'),
+        OPENSSL_RAW_DATA,
+        $iv
+    );
+    // Authentication
+    $hmac = hash_hmac(
+        'SHA256',
+        $iv . $ciphertext,
+        mb_substr($key, 32, null, '8bit'),
+        true
+    );
+    return $hmac . $iv . $ciphertext;
+}
+
+/**
+ * @param $data
+ * @param $key
+ * @return false|string
+ * sesssion解密
+ */
+function decrypt($data, $key)
+{
+    $hmac       = mb_substr($data, 0, 32, '8bit');
+    $iv         = mb_substr($data, 32, 16, '8bit');
+    $ciphertext = mb_substr($data, 48, null, '8bit');
+    // Authentication
+    $hmacNew = hash_hmac(
+        'SHA256',
+        $iv . $ciphertext,
+        mb_substr($key, 32, null, '8bit'),
+        true
+    );
+    if (! hash_equals($hmac, $hmacNew)) {
+        return null;
+        //throw new \Exception("Authentication failed");
+    }
+    // Decrypt
+    return openssl_decrypt(
+        $ciphertext,
+        'AES-256-CBC',
+        mb_substr($key, 0, 32, '8bit'),
+        OPENSSL_RAW_DATA,
+        $iv
+    );
+}
