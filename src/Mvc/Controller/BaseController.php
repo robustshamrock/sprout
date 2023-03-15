@@ -132,13 +132,13 @@ class BaseController{
         $this->base_query = $args['base_query'];
         $this->app_path = $args['app_path'];
         $this->args = $args['args'];
+        $this->_current_module_alias = $args['current_module_alias'];
 
         $this->_current_page_url = $args['current_page_url'];
 
-        $this->instancePath = APP_PATH .'App'.DIRECTORY_SEPARATOR.ucfirst($args['currnt_app_name']).
-            DIRECTORY_SEPARATOR . 'src';
-        $this->_current_module_alias = $args['current_module_alias'];
-
+        $this->instancePath = APP_PATH .'App'.DIRECTORY_SEPARATOR.ucfirst($args['currnt_app_name']).DIRECTORY_SEPARATOR.ucfirst($this->_current_module_alias)
+            .DIRECTORY_SEPARATOR . 'src';
+        
         $this->_theme = $args['theme'];
         $this->viewInstance = new BaseView(['class'=>$this->class,
             'instancePath'=>$this->instancePath,

@@ -154,7 +154,7 @@ class RootSegment
                 if($processUrl!=''){
                     $appName = trim($processUrl);
                 }else{
-                    $appName = '/';
+                    $appName = 'home';
                 }
             }
         }
@@ -229,7 +229,7 @@ class RootSegment
             unset($appRegisterConfigArr['module'][$targetAppName]['route']);
             $this->appConfig['conf'] = $appRegisterConfigArr['module'][$targetAppName];
 
-            $path = APP_PATH.'App'.DIRECTORY_SEPARATOR.$targetAppName.DIRECTORY_SEPARATOR.'src'.DIRECTORY_SEPARATOR.'Config';
+            $path = APP_PATH.'App'.DIRECTORY_SEPARATOR.$targetAppName.DIRECTORY_SEPARATOR.ucfirst($this->_currentModuleAlias).DIRECTORY_SEPARATOR.'src'.DIRECTORY_SEPARATOR.'Config';
 
             $redisCacheInstance = $this->__getContainer('redis_cache');
             $batchArr = $batchGetFileMd5Arr = $this->__configInstance->batchGetFileMd5($path);
@@ -263,7 +263,7 @@ class RootSegment
             unset($this->__appRegisterConfigArr);
         }else{
             // 查找专用配置
-            $path = APP_PATH.'App'.DIRECTORY_SEPARATOR.$targetAppName.DIRECTORY_SEPARATOR.'src'.DIRECTORY_SEPARATOR.'Config';
+            $path = APP_PATH.'App'.DIRECTORY_SEPARATOR.$targetAppName.DIRECTORY_SEPARATOR.ucfirst($this->_currentModuleAlias).DIRECTORY_SEPARATOR.'src'.DIRECTORY_SEPARATOR.'Config';
 
             $redisCacheInstance = $this->__getContainer('redis_cache');
             $batchArr = $batchGetFileMd5Arr = $this->__configInstance->batchGetFileMd5($path);
@@ -287,7 +287,7 @@ class RootSegment
                 $this->appConfig['route'] = $combineConfigs['route'];
                 unset($configs['app']['route']);
                 $this->appConfig['conf'] = $configs;
-
+             
                 unset($combineConfigs);
                 unset($this->__appRegisterConfigArr);
                 unset($configs);
@@ -365,7 +365,7 @@ class RootSegment
                     // 绝对路径类
                     $appAbsolutePath = $className;
                 }else{
-                    $appAbsolutePath = '\\App\\'.ucfirst($this->currentAppName).'\\src\\Controller\\'.$className;
+                    $appAbsolutePath = '\\App\\'.ucfirst($this->currentAppName).'\\'.ucfirst($this->_currentModuleAlias).'\\src\\Controller\\'.$className;
                 }
 
                 // 类是否存在
@@ -445,7 +445,7 @@ class RootSegment
         }
 
         // 绝对路径
-        $path = APP_PATH . 'App'.DIRECTORY_SEPARATOR . ucfirst($this->currentAppName) .DIRECTORY_SEPARATOR.$file;
+        $path = APP_PATH . 'App'.DIRECTORY_SEPARATOR . ucfirst($this->currentAppName) .DIRECTORY_SEPARATOR.ucfirst($this->_currentModuleAlias).DIRECTORY_SEPARATOR.$file;
         if (is_file($path)){
             \Shamrock\Instance\HelperLoad($path);
         }
@@ -458,7 +458,7 @@ class RootSegment
         }
 
         // 绝对路径
-        $path = APP_PATH . 'App'.DIRECTORY_SEPARATOR . ucfirst($this->currentAppName) .DIRECTORY_SEPARATOR.$file;
+        $path = APP_PATH . 'App'.DIRECTORY_SEPARATOR . ucfirst($this->currentAppName) .DIRECTORY_SEPARATOR.ucfirst($this->_currentModuleAlias).DIRECTORY_SEPARATOR.$file;
         if (is_file($path)){
             \Shamrock\Instance\HelperLoad($path);
         }
@@ -478,10 +478,10 @@ class RootSegment
      * 依赖注入组件
      */
     private function __setContainer(){
-        $path = APP_PATH.'App'.DIRECTORY_SEPARATOR.$this->currentAppName.DIRECTORY_SEPARATOR.'ContainerInstance.php';
+        $path = APP_PATH.'App'.DIRECTORY_SEPARATOR.$this->currentAppName.DIRECTORY_SEPARATOR.ucfirst($this->_currentModuleAlias).DIRECTORY_SEPARATOR.'ContainerInstance.php';
         if(is_file($path)){
             $this->__configInstance = $configInstance = new \Shamrock\Instance\Mvc\Cache\src\CaChe('\Shamrock\Instance\Mvc\Cache\src\CacheType\FileSystemV2Config',[
-                'cacheDir'=>APP_PATH.'App'.DIRECTORY_SEPARATOR.ucfirst($this->currentAppName).DIRECTORY_SEPARATOR.'src'.DIRECTORY_SEPARATOR.'Config'
+                'cacheDir'=>APP_PATH.'App'.DIRECTORY_SEPARATOR.ucfirst($this->currentAppName).DIRECTORY_SEPARATOR.ucfirst($this->_currentModuleAlias).DIRECTORY_SEPARATOR.'src'.DIRECTORY_SEPARATOR.'Config'
             ]);
             $containerObject = include $path;
             $this->__container = $containerObject;
