@@ -287,7 +287,7 @@ class RootSegment
                 $this->appConfig['route'] = $combineConfigs['route'];
                 unset($configs['app']['route']);
                 $this->appConfig['conf'] = $configs;
-             
+
                 unset($combineConfigs);
                 unset($this->__appRegisterConfigArr);
                 unset($configs);
@@ -333,7 +333,8 @@ class RootSegment
         $routeInfo = unserialize($this->appConfig['route'])->dispatch($httpMethod, $uri);
         switch ($routeInfo[0]) {
             case \FastRoute\Dispatcher::NOT_FOUND:
-                echo 404;
+                header('Location:/404/index.html');
+                //include APP_PATH.DIRECTORY_SEPARATOR."public".DIRECTORY_SEPARATOR."404".DIRECTORY_SEPARATOR."index.html";
                 break;
             case \FastRoute\Dispatcher::METHOD_NOT_ALLOWED:
                 $allowedMethods = $routeInfo[1];
