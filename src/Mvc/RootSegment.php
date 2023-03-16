@@ -248,7 +248,18 @@ class RootSegment
                 $configs = $redisCacheInstance->get('RootSegment/__registerConfig/batchGetFileMd5Arr');
             }
 
-            $combineConfigs = \Shamrock\Instance\MeargeConfigs($configs);
+            $keys = array_keys($configs);
+            natcasesort($keys);
+            $newArr = [];
+            foreach ($keys as $fileName){
+                foreach ($configs as $key=>$val){
+                    if ($fileName==$key){
+                        $newArr[$key] = $val;
+                    }
+                }
+            }
+
+            $combineConfigs = \Shamrock\Instance\MeargeConfigs($newArr);
             if(isset($combineConfigs['route'])&&!empty($combineConfigs['route'])){
                 $this->appConfig['route'] = $combineConfigs['route'];
                 unset($configs['app']['route']);
@@ -282,7 +293,18 @@ class RootSegment
                 $configs = $redisCacheInstance->get('RootSegment/__registerConfig/batchGetFileMd5Arr');
             }
 
-            $combineConfigs = \Shamrock\Instance\MeargeConfigs($configs);
+            $keys = array_keys($configs);
+            natcasesort($keys);
+            $newArr = [];
+            foreach ($keys as $fileName){
+                foreach ($configs as $key=>$val){
+                    if ($fileName==$key){
+                        $newArr[$key] = $val;
+                    }
+                }
+            }
+
+            $combineConfigs = \Shamrock\Instance\MeargeConfigs($newArr);
             if(isset($combineConfigs['route'])&&!empty($combineConfigs['route'])){
                 $this->appConfig['route'] = $combineConfigs['route'];
                 unset($configs['app']['route']);

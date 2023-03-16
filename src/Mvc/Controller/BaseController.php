@@ -138,7 +138,7 @@ class BaseController{
 
         $this->instancePath = APP_PATH .'App'.DIRECTORY_SEPARATOR.ucfirst($args['currnt_app_name']).DIRECTORY_SEPARATOR.ucfirst($this->_current_module_alias)
             .DIRECTORY_SEPARATOR . 'src';
-        
+
         $this->_theme = $args['theme'];
         $this->viewInstance = new BaseView(['class'=>$this->class,
             'instancePath'=>$this->instancePath,
