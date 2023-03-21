@@ -581,3 +581,14 @@ function FindHtmlTagProperty(string &$html, string $property_name,string $before
     }
     return false;
 }
+
+/**
+ * @param $str
+ * @param $key
+ * @return array|string|string[]|null
+ * 获取html标签
+ */
+function getHtmlProperty($str,$key){
+    $str=preg_replace("/[\s\S]*\s".$key."[=\"\']+([^\"\']*)[\"\'][\s\S]*/","$1",$str);
+    return $str;
+};
