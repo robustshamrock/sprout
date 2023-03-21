@@ -506,3 +506,78 @@ function decrypt($data, $key)
         $iv
     );
 }
+
+/**
+ * @param $string
+ * @param $tag
+ * @return string|string[]
+ * 获取视图模板值
+ */
+function getViewTagValue($string, $tag){
+    $pattern = "/{{$tag}.*}(.*?){\/{$tag}}/s";
+    preg_match_all($pattern, $string, $matches);
+    return isset($matches[1]) ? $matches[1] : '';
+}
+
+/**
+ * 从HTML代码中取出一个属性值(但不限于HTML)
+ * @param string &$html HTML代码
+ * @param string $property_name 属性名称
+ * @param string $before_exp 前导正则式,不能包含界定符和说明符,默认为空
+ * @param string $after_exp 后缀正则式,不能包含界定符和说明符,默认为空
+ * @return false|string
+ */
+function FindHtmlTagProperty(string &$html, string $property_name,string $before_exp='',string $after_exp='')
+{
+    if (empty($html) || empty($property_name)) return false;
+    $pn_len = strlen($property_name);
+    $html_len = strlen($html);
+    if ($pn_len >= $html_len) return false;
+    $strarr = preg_split('//us', $html, -1, PREG_SPLIT_NO_EMPTY);
+    $html_len = count($strarr);
+    $subchr = '*';//不能设置为空白字符,影响下一步的匹配
+
+    $repls = array();
+    $quotchr = 0;
+    $backslash = 0;
+    for ($i = 0; $i < $html_len; $i++) {
+        $chri = ord($strarr[$i]);
+        if ($chri == 34 || $chri == 39) {
+            if ($quotchr == 0) {
+                $quotchr = $chri;
+            } elseif ($quotchr == $chri) {
+                if ($backslash % 2 == 1) {
+                    $repls[] = array($i, $strarr[$i]);
+                    $strarr[$i] = $subchr;
+                } else
+                    $quotchr = 0;
+            }
+            $backslash = 0;
+        } else {
+            if ($chri == 92) {
+                $backslash++;
+            } else {
+                $backslash = 0;
+            }
+        }
+    }
+    $newStr = null;
+    if (count($repls) > 0) $newStr = implode('', $strarr);
+    else $newStr = $html;
+    $matches = null;
+    if (preg_match('/.*?'.$before_exp.'\b' . preg_quote($property_name) . '\s*=\s*((?P<quot>["\'])(?P<prop>.*?)\k<quot>|(?P<prop2>[^\s]+))'.$after_exp.'/ius', $newStr, $matches, PREG_OFFSET_CAPTURE) > 0) {
+        $rc = count($repls);
+        if ($rc == 0) {
+            if ($matches['prop'][1] > -1) {
+                return $matches['prop'][0];
+            }
+            return $matches['prop2'][0];
+        } else {
+            if ($matches['prop'][1] > -1) {
+                return substr($html,$matches['prop'][1],strlen($matches['prop'][0]));
+            }
+            return substr($html,$matches['prop2'][1],strlen($matches['prop2'][0]));
+        }
+    }
+    return false;
+}
