@@ -154,6 +154,8 @@ class RootSegment
                 if($processUrl!=''){
                     $appName = trim($processUrl);
                     if (strpos($processUrl,'/')==false&&strpos($processUrl,'.')){
+                        $appName = 'home';
+                    }else{
                         $appName = $processUrl;
                     }
                 }else{
@@ -161,7 +163,7 @@ class RootSegment
                 }
             }
         }
- 
+
         // 赋值
         $this->_currentModuleAlias = $appName;
 
@@ -263,6 +265,7 @@ class RootSegment
             }
 
             $combineConfigs = \Shamrock\Instance\MeargeConfigs($newArr);
+
             if(isset($combineConfigs['route'])&&!empty($combineConfigs['route'])){
                 $this->appConfig['route'] = $combineConfigs['route'];
                 unset($configs['app']['route']);
@@ -358,7 +361,6 @@ class RootSegment
             $uri = substr($uri, 0, $pos);
         }
         $uri = rawurldecode($uri);
-
         $routeInfo = unserialize($this->appConfig['route'])->dispatch($httpMethod, $uri);
         switch ($routeInfo[0]) {
             case \FastRoute\Dispatcher::NOT_FOUND:
