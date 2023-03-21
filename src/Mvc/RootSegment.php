@@ -153,12 +153,15 @@ class RootSegment
             }else{
                 if($processUrl!=''){
                     $appName = trim($processUrl);
+                    if (strpos($processUrl,'/')==false&&strpos($processUrl,'.')){
+                        $appName = $processUrl;
+                    }
                 }else{
                     $appName = 'home';
                 }
             }
         }
-
+ 
         // 赋值
         $this->_currentModuleAlias = $appName;
 
@@ -326,7 +329,11 @@ class RootSegment
      */
     protected function __getContainer($name=''){
         if ($name){
-            return $this->__container->get($name);
+            if (!empty($this->__container) && method_exists($this->__container,'get')){
+                return $this->__container->get($name);
+            }else{
+                return null;
+            }
         }else{
             return null;
         }
