@@ -649,7 +649,7 @@ function decrypt_cbc($text,$key,$iv='')
     // 是否序列化对象
     $obj = unserialize($data);
     if($obj===false){
-        return null;
+        return $data;
     }else{
         return $obj;
     }
