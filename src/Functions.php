@@ -675,3 +675,43 @@ function myisJsonString($stringData)
         return false;
     }
 }
+
+// 公钥加密
+function opensslPublicEncrypt($text,$public_key){
+    $res = openssl_public_encrypt($text,$encrypt,$public_key);
+    if($res==false) {
+        return false;
+    }else{
+        return $encrypt;
+    }
+}
+
+// 私钥解密
+function opensslPrivateDecrypt($encrypt,$private_key){
+    $res = openssl_private_decrypt($encrypt,$decrypt,$private_key);
+    if($res==false){
+        return null;
+    }else{
+        return $decrypt;
+    }
+}
+
+// 私钥加密
+function opensslPrivateEncrypt($text,$private_key){
+    $res = openssl_private_encrypt($text,$encrypt,$private_key);
+    if($res==false){
+        return false;
+    }else{
+        return $encrypt;
+    }
+}
+
+// 公钥解密
+function opensslPublicDecrypt($encrypt,$public_key){
+    $res = openssl_public_decrypt($encrypt,$decrypt,$public_key);
+    if($res==false){
+        return null;
+    }else{
+        return $decrypt;
+    }
+}
