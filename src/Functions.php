@@ -592,3 +592,86 @@ function getHtmlProperty($str,$key){
     $str=preg_replace("/[\s\S]*\s".$key."[=\"\']+([^\"\']*)[\"\'][\s\S]*/","$1",$str);
     return $str;
 };
+
+/**
+ * AES-256-CBC 加密
+ * @param $data
+ * @return mixed|string
+ */
+function encrypt_cbc($data,$key,$iv='')
+{
+    if(!$iv){
+        // 16位
+        $iv = '4387438hfdhfdjhg';
+    }
+
+    // 是否为空
+    if(!$key){
+        return null;
+    }
+
+    // 是否数组
+    if(is_array($data)){
+        $data = json_encode($data);
+    }
+
+    // 是否对象
+    if(is_object($data)){
+        $data = serialize($data);
+    }
+
+    $text = openssl_encrypt($data, 'AES-256-CBC', $key, OPENSSL_RAW_DATA, $iv);
+    return base64_encode($text);
+}
+
+/**
+ * AES-256-CBC 解密
+ * @param $text
+ * @return string
+ */
+function decrypt_cbc($text,$key,$iv='')
+{
+    if(!$iv){
+        $iv = '4387438hfdhfdjhg';
+    }
+    if(!$key){
+        return null;
+    }
+
+    $decodeText = base64_decode($text);
+    $data = openssl_decrypt($decodeText, 'AES-256-CBC', $key, OPENSSL_RAW_DATA, $iv);
+
+    // 是否json数组
+    if(myisJsonString($data)){
+        return json_decode($data,true);
+    }
+
+    // 是否序列化对象
+    $obj = unserialize($data);
+    if($obj===false){
+        return null;
+    }else{
+        return $obj;
+    }
+}
+
+/**
+ * 校验json字符串
+ * @param string $stringData
+ * @return bool
+ */
+function myisJsonString($stringData)
+{
+    if (empty($stringData)) return false;
+
+    try
+    {
+        //校验json格式
+        json_decode($stringData, true);
+        return JSON_ERROR_NONE === json_last_error();
+    }
+    catch (\Exception $e)
+    {
+        return false;
+    }
+}

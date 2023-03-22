@@ -116,6 +116,12 @@ class BaseController{
     protected $_current_page_url;
 
     /**
+     * @var
+     * 缓存实例
+     */
+    protected $_cacheInstance;
+
+    /**
      * @param $args
      * 准备工作
      */
@@ -148,6 +154,7 @@ class BaseController{
             ]);
 
         $this->loadSession();
+        $this->loadCache();
         $this->assign('framework_versition',$this->framework_version);
     }
 
@@ -162,6 +169,15 @@ class BaseController{
             'instance'=> new \Shamrock\Instance\Session\Type\RedisSingle($redisInstance),
         ]);
         $this->_sessionInstance = $session;
+    }
+
+    /**
+     * @return void
+     * 加载缓存
+     */
+    public function loadCache(){
+        $redisInstance = $this->getContainer('redis_cache');
+        $this->_cacheInstance = $redisInstance;
     }
 
     /**
@@ -191,7 +207,7 @@ class BaseController{
      * 跳转中转页
      */
     public function redirectPage($url,$data){
-
+        
     }
 
     /**
@@ -239,6 +255,63 @@ class BaseController{
     public function getSession($key){
         $sessionID = $this->_sessionInstance->getSessionIdForFileType();
         return $this->_sessionInstance->get('session_'.$sessionID.$key);
+    }
+
+    /**
+     * @param $type
+     * @return void
+     * 获取sessionid
+     */
+    public function getSessionId($type='file'){
+        if($type='file') {
+            return $this->_sessionInstance->getSessionIdForFileType();
+        }
+    }
+
+    /**
+     * @param $key
+     * @param $value
+     * @param $expire
+     * @return void
+     * 缓存方法
+     */
+    public function cache($key,$value='',$expire=true){
+        if ($value){
+            if($expire===true){
+                $this->_cacheInstance->set($key,$value);
+            }else{
+                $this->_cacheInstance->set($key,$value,$expire);
+            }
+        }else{
+            return $this->_cacheInstance->get($key);
+        }
+    }
+
+    /**
+     * @param $key
+     * @param $value
+     * @param $expire
+     * @return void
+     * 设置缓存
+     */
+    public function setCache($key,$value='',$expire=true)
+    {
+        if ($value) {
+            if ($expire === true) {
+                $this->_cacheInstance->set($key, $value);
+            } else {
+                $this->_cacheInstance->set($key, $value, $expire);
+            }
+        }
+    }
+
+    /**
+     * @param $key
+     * @return mixed
+     * 获取缓存
+     */
+    public function getCache($key){
+        return $this->_cacheInstance->get($key);
     }
 
     /**
