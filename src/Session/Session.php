@@ -40,7 +40,12 @@ class Session{
         if ($this->isJsonString($resultStr)){
             return json_decode($resultStr,true);
         }else{
-            return $resultStr;
+			$data = unserialize($resultStr);
+			if($data===false){
+				return $resultStr;
+			}else{
+				return $data;
+			}
         }
 	}
 
@@ -54,6 +59,9 @@ class Session{
 	public function set($key,$val,$expire=true){
         if (is_array($val)){
             $val = json_encode($val);
+        }
+		if (is_object($val)){
+            $val = serialize($val);
         }
         $val = $this->encrypt($val,$this->_key);
 		return $this->_sessionInstance->set($key,$val,$expire);
