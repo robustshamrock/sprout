@@ -512,7 +512,7 @@ class RootSegment
     private function __setContainer(){
         $path = APP_PATH.'App'.DIRECTORY_SEPARATOR.$this->currentAppName.DIRECTORY_SEPARATOR.ucfirst($this->_currentModuleAlias).DIRECTORY_SEPARATOR.'ContainerInstance.php';
         if(is_file($path)){
-            $this->__configInstance = $configInstance = new \Shamrock\Instance\Mvc\Cache\src\CaChe('\Shamrock\Instance\Mvc\Cache\src\CacheType\FileSystemV2Config',[
+            $this->__configInstance = $configInstance = new \Shamrock\Instance\Mvc\Cache\src\CaChe('\Shamrock\Instance\Mvc\Cache\src\Adapter\FileSystemV2Config',[
                 'cacheDir'=>APP_PATH.'App'.DIRECTORY_SEPARATOR.ucfirst($this->currentAppName).DIRECTORY_SEPARATOR.ucfirst($this->_currentModuleAlias).DIRECTORY_SEPARATOR.'src'.DIRECTORY_SEPARATOR.'Config'
             ]);
             $containerObject = include $path;

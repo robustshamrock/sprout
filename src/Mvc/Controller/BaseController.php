@@ -166,7 +166,7 @@ class BaseController{
         session_start();
         $redisInstance = $this->getContainer('redis_cache');
         $session = new Session(['key'=>'123123fasdfsdsdf123123sdfasfasdfsdfasd',
-            'instance'=> new \Shamrock\Instance\Session\Type\RedisSingle($redisInstance),
+            'instance'=> new \Shamrock\Instance\Session\Adapter\RedisSingle($redisInstance),
         ]);
         $this->_sessionInstance = $session;
     }

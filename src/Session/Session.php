@@ -40,12 +40,7 @@ class Session{
         if ($this->isJsonString($resultStr)){
             return json_decode($resultStr,true);
         }else{
-			$data = unserialize($resultStr);
-			if($data===false){
-				return $resultStr;
-			}else{
-				return $data;
-			}
+			return $resultStr;
         }
 	}
 
